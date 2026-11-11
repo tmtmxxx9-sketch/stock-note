@@ -37,8 +37,8 @@ export function describeItem(
   return { level: "green", label: "余裕あり" };
 }
 
-export function formatExpiry(expiryDate: string): string {
-  const days = daysUntil(expiryDate);
+export function formatExpiry(expiryDate: string, today: Date): string {
+  const days = daysUntil(expiryDate, today);
   if (days === null) return "期限なし";
   const [year, month, day] = expiryDate.split("-").map(Number);
   const date = new Intl.DateTimeFormat("ja-JP", {

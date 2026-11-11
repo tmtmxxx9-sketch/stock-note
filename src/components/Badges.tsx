@@ -31,8 +31,8 @@ export function CategoryBadge({ category }: { category: Category }) {
   );
 }
 
-export function SignalBadge({ item }: { item: StockItem }) {
-  const signal = describeItem(item);
+export function SignalBadge({ item, today }: { item: StockItem; today: Date }) {
+  const signal = describeItem(item, today);
   const style = SIGNAL_STYLE[signal.level];
   return (
     <span
@@ -44,6 +44,6 @@ export function SignalBadge({ item }: { item: StockItem }) {
   );
 }
 
-export function ExpiryLine({ item }: { item: StockItem }) {
-  return <p className="text-sm text-muted">{formatExpiry(item.expiryDate)}</p>;
+export function ExpiryLine({ item, today }: { item: StockItem; today: Date }) {
+  return <p className="text-sm text-muted">{formatExpiry(item.expiryDate, today)}</p>;
 }

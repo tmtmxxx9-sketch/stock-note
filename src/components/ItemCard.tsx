@@ -6,20 +6,21 @@ import type { StockItem } from "@/types/stock";
 
 type ItemCardProps = {
   item: StockItem;
+  today: Date;
   onQuantity: (id: string, quantity: number) => void;
   onToggleShopping: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
-export function ItemCard({ item, onQuantity, onToggleShopping, onDelete }: ItemCardProps) {
+export function ItemCard({ item, today, onQuantity, onToggleShopping, onDelete }: ItemCardProps) {
   return (
     <article className="rounded-2xl border border-line bg-card p-4 shadow-sm transition active:scale-[0.99]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="truncate text-lg font-semibold tracking-tight">{item.name}</h2>
-          <ExpiryLine item={item} />
+          <ExpiryLine item={item} today={today} />
         </div>
-        <SignalBadge item={item} />
+        <SignalBadge item={item} today={today} />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <CategoryBadge category={item.category} />
