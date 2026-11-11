@@ -8,9 +8,9 @@ import { ViewNav } from "@/components/ViewNav";
 import { describeItem } from "@/lib/signal";
 import {
   commitItems,
-  ensureStored,
   getItemSnapshot,
   getServerItemSnapshot,
+  startSync,
   subscribeItems,
 } from "@/lib/storage";
 import type { StockItem, ViewId } from "@/types/stock";
@@ -29,8 +29,8 @@ export function StockApp() {
   const [view, setView] = useState<ViewId>("inventory");
 
   useEffect(() => {
-    ensureStored();
     setToday(new Date());
+    return startSync();
   }, []);
 
   function update(id: string, recipe: (item: StockItem) => StockItem) {
