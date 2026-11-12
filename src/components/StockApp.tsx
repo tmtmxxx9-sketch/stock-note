@@ -17,21 +17,33 @@ import type { StockItem, ViewId } from "@/types/stock";
 
 const RANK = { red: 0, amber: 1, green: 2 };
 
+function subscribeToday() {
+  return () => {};
+}
+
+let cachedToday: Date | null = null;
+
+function todayOnClient() {
+  if (!cachedToday) cachedToday = new Date();
+  return cachedToday;
+}
+
+function todayOnServer() {
+  return null;
+}
+
 function byUrgency(left: StockItem, right: StockItem, today: Date) {
   const gap = RANK[describeItem(left, today).level] - RANK[describeItem(right, today).level];
   if (gap !== 0) return gap;
   return left.name.localeCompare(right.name, "ja");
 }
 
-export function StockApp() {
+export function StockApp({ accountEmail }: { accountEmail: string | null }) {
   const items = useSyncExternalStore(subscribeItems, getItemSnapshot, getServerItemSnapshot);
-  const [today, setToday] = useState<Date | null>(null);
+  const today = useSyncExternalStore(subscribeToday, todayOnClient, todayOnServer);
   const [view, setView] = useState<ViewId>("inventory");
 
-  useEffect(() => {
-    setToday(new Date());
-    return startSync();
-  }, []);
+  useEffect(() => startSync(), []);
 
   function update(id: string, recipe: (item: StockItem) => StockItem) {
     commitItems(
@@ -57,6 +69,9 @@ export function StockApp() {
       <header>
         <p className="text-sm font-semibold tracking-wide text-emerald-800">家庭の在庫</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">ストックノート</h1>
+        {accountEmail ? (
+          <p className="mt-2 text-sm font-medium text-emerald-800">{accountEmail}</p>
+        ) : null}
         <p className="mt-2 text-sm leading-6 text-muted">
           {today
             ? attention > 0
