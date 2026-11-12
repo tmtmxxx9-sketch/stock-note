@@ -83,6 +83,11 @@ export function StockApp() {
     );
   }
 
+  function clearFilters() {
+    setExpiryFilters([]);
+    setCategoryFilters([]);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-6 pb-28 sm:px-6 sm:pt-10 sm:pb-12">
       <header>
@@ -99,6 +104,7 @@ export function StockApp() {
             categories={categoryFilters}
             onExpiry={toggleExpiry}
             onCategory={toggleCategory}
+            onClear={clearFilters}
           />
         ) : null}
         {view === "shopping" && today ? <ShareListButton items={visible} /> : null}
@@ -129,8 +135,7 @@ export function StockApp() {
                   return;
                 }
                 if (filtersActive) {
-                  setExpiryFilters([]);
-                  setCategoryFilters([]);
+                  clearFilters();
                   return;
                 }
                 setView("add");
