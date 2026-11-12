@@ -36,10 +36,7 @@ export function ItemCard({ item, today, onQuantity, onToggleShopping, onDelete }
           >
             <Minus aria-hidden="true" size={18} />
           </button>
-          <p className="min-w-16 text-center text-base font-semibold tabular-nums">
-            {item.quantity}
-            <span className="ml-1 text-sm font-medium text-muted">{item.unit}</span>
-          </p>
+          <p className="min-w-10 text-center text-base font-semibold tabular-nums">{item.quantity}</p>
           <button
             type="button"
             aria-label={`${item.name}を増やす`}

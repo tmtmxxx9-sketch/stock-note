@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { CATEGORY_LABEL, CATEGORIES, UNITS, type Category, type StockItem } from "@/types/stock";
+import { CATEGORY_LABEL, CATEGORIES, type Category, type StockItem } from "@/types/stock";
 
 type AddFormProps = {
   onAdd: (item: StockItem) => void;
@@ -11,7 +11,6 @@ export function AddForm({ onAdd }: AddFormProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Category>("food");
   const [quantity, setQuantity] = useState(1);
-  const [unit, setUnit] = useState<(typeof UNITS)[number]>("個");
   const [expiryDate, setExpiryDate] = useState("");
   const [inShoppingList, setInShoppingList] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +28,7 @@ export function AddForm({ onAdd }: AddFormProps) {
       name: trimmed,
       category,
       quantity: count,
-      unit,
+      unit: "",
       expiryDate,
       inShoppingList,
       updatedAt: new Date().toISOString(),
@@ -57,36 +56,20 @@ export function AddForm({ onAdd }: AddFormProps) {
             className="min-h-11 rounded-2xl border border-line bg-white px-3 text-base font-normal outline-none focus:border-emerald-700"
           />
         </label>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-1.5 text-sm font-semibold">
-            カテゴリー
-            <select
-              value={category}
-              onChange={(event) => setCategory(event.target.value as Category)}
-              className="min-h-11 rounded-2xl border border-line bg-white px-3 text-base font-normal outline-none focus:border-emerald-700"
-            >
-              {CATEGORIES.map((value) => (
-                <option key={value} value={value}>
-                  {CATEGORY_LABEL[value]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1.5 text-sm font-semibold">
-            単位
-            <select
-              value={unit}
-              onChange={(event) => setUnit(event.target.value as (typeof UNITS)[number])}
-              className="min-h-11 rounded-2xl border border-line bg-white px-3 text-base font-normal outline-none focus:border-emerald-700"
-            >
-              {UNITS.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <label className="grid gap-1.5 text-sm font-semibold">
+          カテゴリー
+          <select
+            value={category}
+            onChange={(event) => setCategory(event.target.value as Category)}
+            className="min-h-11 rounded-2xl border border-line bg-white px-3 text-base font-normal outline-none focus:border-emerald-700"
+          >
+            {CATEGORIES.map((value) => (
+              <option key={value} value={value}>
+                {CATEGORY_LABEL[value]}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="grid gap-1.5 text-sm font-semibold">
             在庫数

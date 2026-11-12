@@ -1,15 +1,13 @@
 "use client";
 
-import { Apple, Coffee, Flame, Package, Sparkles, type LucideIcon } from "lucide-react";
+import { Apple, Flame, Package, type LucideIcon } from "lucide-react";
 import { describeItem, formatExpiry, type SignalLevel } from "@/lib/signal";
 import { CATEGORY_LABEL, type Category, type StockItem } from "@/types/stock";
 
 const CATEGORY_STYLE: Record<Category, { icon: LucideIcon; className: string }> = {
-  food: { icon: Apple, className: "bg-emerald-50 text-emerald-800" },
-  daily: { icon: Package, className: "bg-sky-50 text-sky-800" },
   seasoning: { icon: Flame, className: "bg-orange-50 text-orange-800" },
-  drink: { icon: Coffee, className: "bg-purple-50 text-purple-800" },
-  other: { icon: Sparkles, className: "bg-stone-100 text-stone-700" },
+  food: { icon: Apple, className: "bg-emerald-50 text-emerald-800" },
+  daily: { icon: Package, className: "bg-blue-50 text-blue-800" },
 };
 
 const SIGNAL_STYLE: Record<SignalLevel, { badge: string; dot: string }> = {

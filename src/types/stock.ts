@@ -1,4 +1,4 @@
-export const CATEGORIES = ["food", "daily", "seasoning", "drink", "other"] as const;
+export const CATEGORIES = ["seasoning", "food", "daily"] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 
@@ -16,11 +16,26 @@ export type StockItem = {
 export type ViewId = "inventory" | "shopping" | "add";
 
 export const CATEGORY_LABEL: Record<Category, string> = {
-  food: "食材",
-  daily: "日用品",
   seasoning: "調味料",
-  drink: "飲料",
-  other: "その他",
+  food: "食料品",
+  daily: "日用品",
 };
 
-export const UNITS = ["個", "本", "パック", "ロール", "袋"] as const;
+const LEGACY_CATEGORY: Record<string, Category> = {
+  seasoning: "seasoning",
+  food: "food",
+  daily: "daily",
+  drink: "food",
+  other: "food",
+  調味料: "seasoning",
+  食材: "food",
+  食料品: "food",
+  飲料: "food",
+  日用品: "daily",
+  その他: "food",
+};
+
+export function normalizeCategory(value: unknown): Category | null {
+  if (typeof value !== "string") return null;
+  return LEGACY_CATEGORY[value] ?? null;
+}

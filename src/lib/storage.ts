@@ -1,6 +1,6 @@
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { CATEGORIES, type Category, type StockItem } from "@/types/stock";
+import { normalizeCategory, type StockItem } from "@/types/stock";
 
 export const STORAGE_KEY = "stock-note:v1";
 
@@ -38,9 +38,9 @@ export function createPresets(today = new Date()): StockItem[] {
     {
       id: "preset-milk",
       name: "牛乳",
-      category: "drink",
+      category: "food",
       quantity: 1,
-      unit: "本",
+      unit: "",
       expiryDate: isoFromToday(0, today),
       inShoppingList: true,
       updatedAt,
@@ -50,7 +50,7 @@ export function createPresets(today = new Date()): StockItem[] {
       name: "卵",
       category: "food",
       quantity: 2,
-      unit: "パック",
+      unit: "",
       expiryDate: isoFromToday(2, today),
       inShoppingList: false,
       updatedAt,
@@ -60,7 +60,7 @@ export function createPresets(today = new Date()): StockItem[] {
       name: "トイレットペーパー",
       category: "daily",
       quantity: 6,
-      unit: "ロール",
+      unit: "",
       expiryDate: "",
       inShoppingList: false,
       updatedAt,
@@ -70,7 +70,7 @@ export function createPresets(today = new Date()): StockItem[] {
       name: "醤油",
       category: "seasoning",
       quantity: 1,
-      unit: "本",
+      unit: "",
       expiryDate: isoFromToday(40, today),
       inShoppingList: false,
       updatedAt,
@@ -78,26 +78,34 @@ export function createPresets(today = new Date()): StockItem[] {
   ];
 }
 
-function isCategory(value: unknown): value is Category {
-  return typeof value === "string" && CATEGORIES.some((category) => category === value);
-}
-
-function isItem(value: unknown): value is StockItem {
-  if (!value || typeof value !== "object") return false;
+function coerceStoredItem(value: unknown): StockItem | null {
+  if (!value || typeof value !== "object") return null;
   const item = value as Partial<StockItem>;
-  return (
-    typeof item.id === "string" &&
-    item.id.length > 0 &&
-    typeof item.name === "string" &&
-    isCategory(item.category) &&
-    typeof item.quantity === "number" &&
-    Number.isFinite(item.quantity) &&
-    item.quantity >= 0 &&
-    typeof item.unit === "string" &&
-    typeof item.expiryDate === "string" &&
-    typeof item.inShoppingList === "boolean" &&
-    typeof item.updatedAt === "string"
-  );
+  const category = normalizeCategory(item.category);
+  const quantity = typeof item.quantity === "number" ? item.quantity : Number(item.quantity);
+  if (
+    typeof item.id !== "string" ||
+    item.id.length === 0 ||
+    typeof item.name !== "string" ||
+    !category ||
+    !Number.isFinite(quantity) ||
+    quantity < 0 ||
+    typeof item.expiryDate !== "string" ||
+    typeof item.inShoppingList !== "boolean" ||
+    typeof item.updatedAt !== "string"
+  ) {
+    return null;
+  }
+  return {
+    id: item.id,
+    name: item.name,
+    category,
+    quantity,
+    unit: typeof item.unit === "string" ? item.unit : "",
+    expiryDate: item.expiryDate,
+    inShoppingList: item.inShoppingList,
+    updatedAt: item.updatedAt,
+  };
 }
 
 function readStored(): StockItem[] {
@@ -107,7 +115,10 @@ function readStored(): StockItem[] {
     if (raw === null) return createPresets();
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return createPresets();
-    return parsed.filter(isItem);
+    return parsed.flatMap((entry) => {
+      const item = coerceStoredItem(entry);
+      return item ? [item] : [];
+    });
   } catch {
     return createPresets();
   }
@@ -136,7 +147,7 @@ function toRow(item: StockItem): StockRow {
     name: item.name,
     category: item.category,
     quantity: item.quantity,
-    unit: item.unit,
+    unit: item.unit || "",
     expiry_date: item.expiryDate || null,
     in_shopping_list: item.inShoppingList,
     updated_at: item.updatedAt,
@@ -145,17 +156,16 @@ function toRow(item: StockItem): StockRow {
 
 function toItem(row: Partial<StockRow>): StockItem | null {
   if (typeof row.id !== "string" || typeof row.updated_at !== "string") return null;
-  const item: StockItem = {
+  return coerceStoredItem({
     id: row.id,
     name: typeof row.name === "string" ? row.name : "",
-    category: row.category as Category,
+    category: row.category,
     quantity: typeof row.quantity === "number" ? row.quantity : Number(row.quantity),
-    unit: row.unit || "個",
+    unit: typeof row.unit === "string" ? row.unit : "",
     expiryDate: row.expiry_date ?? "",
     inShoppingList: Boolean(row.in_shopping_list),
     updatedAt: row.updated_at,
-  };
-  return isItem(item) ? item : null;
+  });
 }
 
 function emit() {
@@ -317,7 +327,12 @@ export function startSync(): () => void {
     try {
       const parsed: unknown = JSON.parse(event.newValue);
       if (!Array.isArray(parsed)) return;
-      replaceFromRemote(parsed.filter(isItem));
+      replaceFromRemote(
+        parsed.flatMap((entry) => {
+          const item = coerceStoredItem(entry);
+          return item ? [item] : [];
+        }),
+      );
     } catch {
       return;
     }
