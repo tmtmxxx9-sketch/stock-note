@@ -38,7 +38,7 @@ function byUrgency(left: StockItem, right: StockItem, today: Date) {
   return left.name.localeCompare(right.name, "ja");
 }
 
-export function StockApp({ accountEmail }: { accountEmail: string | null }) {
+export function StockApp() {
   const items = useSyncExternalStore(subscribeItems, getItemSnapshot, getServerItemSnapshot);
   const today = useSyncExternalStore(subscribeToday, todayOnClient, todayOnServer);
   const [view, setView] = useState<ViewId>("inventory");
@@ -69,9 +69,6 @@ export function StockApp({ accountEmail }: { accountEmail: string | null }) {
       <header>
         <p className="text-sm font-semibold tracking-wide text-emerald-800">家庭の在庫</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">ストックノート</h1>
-        {accountEmail ? (
-          <p className="mt-2 text-sm font-medium text-emerald-800">{accountEmail}</p>
-        ) : null}
         <p className="mt-2 text-sm leading-6 text-muted">
           {today
             ? attention > 0
